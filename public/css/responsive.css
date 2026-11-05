@@ -574,3 +574,47 @@
 
   .addon-row { transition: none; }
 }
+
+
+/* Mobile payment rows: keep every logo on the same right-hand vertical axis. */
+@media (max-width: 760px) {
+  .payment-method-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    gap: 8px;
+  }
+
+  .payment-method-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 54px;
+    width: 100%;
+    min-width: 0;
+    justify-content: initial;
+    direction: ltr;
+    text-align: right;
+  }
+
+  .payment-method-card > img,
+  .payment-method-card > .payment-method-mark {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+  }
+
+  .payment-method-card > strong {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    min-width: 0;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .payment-method-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+  }
+}
