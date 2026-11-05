@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#100923" />
+    <meta name="description" content="اختر باقتك من عروض WE المحدّثة مباشرةً من Google Sheets." />
+    <title>باقات WE المخصصة</title>
+    <link rel="icon" type="image/webp" href="assets/images/we-project-mark.webp" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#packages">تخطَّ إلى الباقات</a>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <section class="announcement-bar shell" id="announcement-bar" aria-label="إعلانات الموقع" hidden>
+      <span class="announcement-icon" aria-hidden="true">✦</span>
+      <p id="announcement-text"></p>
+      <span class="announcement-dots" id="announcement-dots" aria-hidden="true"></span>
+    </section>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#top" aria-label="باقات WE المخصصة، الصفحة الرئيسية">
+          <img src="assets/images/we-project-mark.webp" alt="" width="44" height="44" />
+          <span>باقات <b class="we-mark">WE</b> المخصصة</span>
+        </a>
+        <div class="header-left-cluster">
+          <nav class="header-nav" aria-label="التنقل الرئيسي">
+            <a href="#packages"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></svg><span>الباقات</span></a>
+          </nav>
+          <div class="header-tools" aria-label="البحث وحالة التحديث">
+            <label class="search-wrap" id="search-wrap" hidden>
+              <span class="search-label">البحث في الباقات</span>
+              <span class="search-field"><span class="search-icon-area" aria-hidden="true"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></span><input id="search-input" type="search" inputmode="search" autocomplete="off" placeholder="ابحث عن باقة..." aria-label="البحث في بيانات الباقات المعروضة" /></span>
+            </label>
+            <div class="status-widget">
+              <span class="status-widget-icon" aria-hidden="true"></span>
+              <div class="update-summary">
+                <p class="offers-status" id="offers-status" role="status" aria-live="polite" aria-busy="true">جاري تحميل الباقات...</p>
+                <p class="last-updated" id="last-updated" hidden></p>
+                <button class="retry-button" id="retry-button" type="button" hidden>إعادة المحاولة</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero shell" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> إنترنت قوي + باقات على مقاسك</p>
+          <h1 id="hero-title">اختار باقتك<br /><span>وخليك على تواصل.</span></h1>
+          <p class="hero-description"></p>
+          <div class="hero-actions">
+            <a class="button button-primary" id="hero-whatsapp" href="#contact-bar" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.5 0 .1 5.3.1 11.9c0 2.1.6 4.1 1.6 5.9L0 24l6.4-1.7a12 12 0 0 0 5.7 1.4h.1c6.6 0 12-5.3 12-11.9 0-3.2-1.3-6.1-3.7-8.3ZM12.1 21.7a9.9 9.9 0 0 1-5.1-1.4l-.4-.2-3.8 1 1-3.7-.3-.4a9.8 9.8 0 0 1-1.5-5.1c0-5.5 4.5-9.9 10-9.9 2.7 0 5.2 1 7 2.9a9.7 9.7 0 0 1 2.9 7c0 5.4-4.5 9.8-9.9 9.8Zm5.5-7.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.3-.6.1-.3-.2-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.5-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.1 3 .1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.3-.6-.5Z" /></svg>
+              تواصل عبر واتساب
+            </a>
+            <a class="button button-quiet" href="#packages">شوف الباقات <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="hero-facts" aria-label="معلومات الباقات">
+            <span><b id="offer-count">—</b> باقات</span><i aria-hidden="true"></i>
+            <span id="offer-range">جارٍ التحقق من المصدر</span><i aria-hidden="true"></i>
+            <span>الدفع بعد التفعيل</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="visual-orbit orbit-a" aria-hidden="true"></div>
+          <div class="visual-orbit orbit-b" aria-hidden="true"></div>
+          <img class="sim-hero" src="assets/images/sim-hero.webp" alt="شريحة WE ذهبية بتصميم تقني مضيء" width="720" height="720" decoding="async" fetchpriority="high" />
+          <div class="visual-tag"><span class="tag-spark" aria-hidden="true">✦</span><span>اختيارات تناسب احتياجاتك ✨</span></div>
+        </div>
+      </section>
+
+      <section class="offers-section shell" id="packages" aria-labelledby="offers-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">باقات <b class="we-mark">WE</b> المخصصة</p>
+            <h2 id="offers-title">باقات WE المخصصة</h2>
+          </div>
+          <p class="section-lead"></p>
+        </div>
+
+        <div class="package-filters" id="package-filters" hidden>
+          <span class="filter-label">اختار تصنيف الباقات:</span>
+          <div class="category-tabs" id="category-tabs" role="group" aria-label="تصنيف الباقات"></div>
+        </div>
+        <div class="offer-grid" id="offer-grid" aria-live="polite" aria-busy="true"></div>
+        <p class="offers-empty" id="offers-empty" hidden></p>
+
+        <div class="extra-data-bar" id="extra-data-bar" aria-label="تفاصيل الإضافات" hidden>
+          <div class="extra-data-items" id="extra-data-items"></div>
+        </div>
+        <div class="features-bar" aria-label="مزايا الباقة">
+          <ul class="features-list">
+            <li class="feature-item feature-payment">
+              <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 9h18M7 14h4" /></svg>
+              <span>الدفع بعد التفعيل</span>
+            </li>
+            <li class="feature-item feature-data">
+              <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h13M13 4l4 4-4 4M20 16H7M11 12l-4 4 4 4" /></svg>
+              <span>1 ميجا = 1 ميجا</span>
+            </li>
+            <li class="feature-item feature-minutes">
+              <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.3 3.4 10 7.1 8.4 9.2c1.1 2.5 3 4.4 5.5 5.5l2.1-1.6 2.1-1.6 3.7 2.7-.6 3c-.2 1-1.1 1.7-2.1 1.7-6.9 0-12.5-5.6-12.5-12.5 0-1 .7-1.9 1.7-2.1l2.1-.5Z" /></svg>
+              <span>1 دقيقة = 1 دقيقة لكل الشبكات</span>
+            </li>
+            <li class="feature-item feature-conversion">
+              <svg class="feature-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h10M11 5l3 3-3 3M20 16h-9m2-3-2 3 2 3" /><path d="M17 5h4v14h-4z" /></svg>
+              <span>بعد انتهاء الجيجات: 1 دقيقة = 1 ميجا</span>
+            </li>
+          </ul>
+        </div>
+        <div class="payment-note" id="final-note" hidden>
+          <span class="payment-item">
+            <svg class="note-icon tax-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14v15H5z" /><path d="M8 8h8M8 12h3M8 16h8M15.5 11.5l-2 5M13.5 11.5h.01M17.5 16.5h.01" /></svg>
+            <span>الأسعار شاملة ضريبة القيمة المضافة و السعر نهائي و واضح</span>
+          </span>
+        </div>
+
+        <section class="payment-methods" id="payment-methods" aria-labelledby="payment-methods-title" hidden>
+          <div class="payment-methods-heading">
+            <span class="payment-methods-icon" aria-hidden="true">▣</span>
+            <div>
+              <p class="eyebrow">طرق الدفع المتاحة</p>
+              <h3 id="payment-methods-title">اختار طريقة الدفع المناسبة</h3>
+            </div>
+          </div>
+          <div class="payment-method-grid" id="payment-method-grid"></div>
+        </section>
+
+
+      </section>
+
+      <section class="contact-strip shell" id="contact-bar" aria-label="روابط التواصل" hidden>
+        <div class="contact-copy">
+          <p>خطوتك الجاية بسيطة</p>
+          <h2>عايز تعرف أكتر؟</h2>
+          <span>ابعتلنا على واتساب لاستفسار عن باقتك، أو انضم لجروباتنا.</span>
+        </div>
+        <div class="contact-links">
+        <a class="contact-item contact-phone" id="contact-phone" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="contact-symbol whatsapp-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.5 0 .1 5.3.1 11.9c0 2.1.6 4.1 1.6 5.9L0 24l6.4-1.7a12 12 0 0 0 5.7 1.4h.1c6.6 0 12-5.3 12-11.9 0-3.2-1.3-6.1-3.7-8.3ZM12.1 21.7a9.9 9.9 0 0 1-5.1-1.4l-.4-.2-3.8 1 1-3.7-.3-.4a9.8 9.8 0 0 1-1.5-5.1c0-5.5 4.5-9.9 10-9.9 2.7 0 5.2 1 7 2.9a9.7 9.7 0 0 1 2.9 7c0 5.4-4.5 9.8-9.9 9.8Zm5.5-7.4c-.3-.2-1.7-.8-2-.9-.3-.1-.5-.2-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.3-.6.1-.3-.2-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6l.5-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.1 3 .1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.2-.3-.3-.6-.5Z" /></svg></span><span>واتساب</span><b id="contact-phone-text"></b><span aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-item contact-group" id="whatsapp-group-link" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="contact-symbol whatsapp-symbol group-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7-1.2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3.5 19.5v-1.2c0-2.4 2.2-4.3 5-4.3s5 1.9 5 4.3v1.2h-10Zm9.8 0v-1.1c0-1.1-.4-2.1-1.1-2.9.8-.7 1.9-1.1 3.3-1.1 2.6 0 4.7 1.7 4.7 3.8v1.3h-6.9Z" /></svg></span><span>جروب واتساب</span><span aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-item contact-telegram" id="telegram-group-link" href="#" target="_blank" rel="noopener noreferrer" hidden>
+          <span class="contact-symbol telegram-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m21.6 3.2-3.1 17.2c-.2 1.2-.9 1.5-1.9.9l-5.4-4-2.6 2.5c-.3.3-.5.5-1 .5l.4-5.5 10-9c.4-.4-.1-.6-.6-.2L5 13.6.1 12.1c-1.1-.3-1.1-1.1.2-1.6L19.4 5c.9-.4 1.8-.2 2.2-1.8Z" /></svg></span><span>جروب تيليجرام</span><span aria-hidden="true">↗</span>
+        </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <a class="footer-brand" href="#top"><b class="we-mark">WE</b> <span>باقات <b class="we-mark">WE</b> المخصصة</span></a>
+      <p>تُقرأ الأسعار والعروض من Google Sheets وتُحدّث تلقائيًا.</p>
+      <a id="footer-whatsapp" href="#contact-bar" hidden>استفسارات الباقات عبر واتساب</a>
+    </footer>
+
+    <script src="site-config.js" defer></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
