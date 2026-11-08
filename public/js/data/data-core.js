@@ -20,6 +20,8 @@
     showCopyButton: false,
     showShareButton: false,
     autoRefreshSeconds: DEFAULT_REFRESH_SECONDS,
+    customRatePlansFrom1: false,
+    customRatePlansFrom16: false,
     whatsappNumber: "",
     whatsappGroupUrl: "",
     telegramGroupUrl: "",
@@ -193,6 +195,8 @@
         mbs,
         gb: mbs / 1000,
         minutes,
+        mainPrice: numberValue(pick(row, ["Main Price"])),
+        increase: numberValue(pick(row, ["Increase"])),
         finalPrice,
         categoryId: categorySource,
         categoryLabel: CATEGORY_LABELS[categorySource] || normalizeText(pick(row, ["Duration", "Category Label"])) || categoryLabel,
@@ -214,8 +218,36 @@
       const showOffer = booleanValue(pick(row, ["Show Offer", "Show Offers"]), false);
       const formula = normalizeText(pick(row, ["Final Price Formula", "_finalPriceFormula", "finalPriceFormula", "formula"]));
       if (!Number.isFinite(finalPrice) || finalPrice <= 0) return null;
-      return { planId, finalPrice, showOffer, discountPercent: discountFromFormula(formula) };
+      const mbs = numberValue(pick(row, ["MBs", "MB", "Megabytes"]));
+      const minutes = numberValue(pick(row, ["Minutes", "Minute"]));
+      return {
+        planId,
+        mbs,
+        gb: Number.isFinite(mbs) ? mbs / 1000 : NaN,
+        minutes,
+        finalPrice,
+        showOffer,
+        discountPercent: discountFromFormula(formula),
+      };
     });
+  }
+
+  function normalizeCustomPricing(sheet) {
+    const rows = Array.isArray(sheet?.rows) ? sheet.rows : [];
+    return rows.map((row) => {
+      const type = normalizeText(pick(row, ["Type"]));
+      const enabled = booleanValue(pick(row, ["Enabled", "Enable", "Active"]), false);
+      const gbFrom = numberValue(pick(row, ["GB From"]));
+      const gbTo = numberValue(pick(row, ["GB To"]));
+      const minutesFrom = numberValue(pick(row, ["Minutes From"]));
+      const minutesTo = numberValue(pick(row, ["Minutes To"]));
+      const gbPrice = numberValue(pick(row, ["GB Price"]));
+      const minutePrice = numberValue(pick(row, ["Minute Price"]));
+      if (!enabled || !type || ![gbFrom, gbTo, minutesFrom, minutesTo, gbPrice, minutePrice].every(Number.isFinite)) return null;
+      if (gbFrom < 0 || gbTo < gbFrom || minutesFrom < 0 || minutesTo < minutesFrom || gbPrice < 0 || minutePrice < 0) return null;
+      if (!/(?:gb\s*only|minutes?\s*only|gb\s*\+\s*minutes?)/i.test(type)) return null;
+      return { type, gbFrom, gbTo, minutesFrom, minutesTo, gbPrice, minutePrice };
+    }).filter(Boolean);
   }
 
   function normalizeSettings(sheet) {
@@ -252,6 +284,8 @@
     result.showLastUpdated = enabledSetting("Show Last Updated", [], result.showLastUpdated);
     result.showCopyButton = enabledSetting("Show Copy Button", [], result.showCopyButton);
     result.showShareButton = enabledSetting("Show Share Button", [], result.showShareButton);
+    result.customRatePlansFrom1 = enabledSetting("Custom Rate Plans From 1", [], false);
+    result.customRatePlansFrom16 = enabledSetting("Custom Rate Plans From 16", [], false);
     const whatsappToggle = entryFor(["Show WhatsApp"]);
     const whatsappGroupToggle = entryFor(["Show WhatsApp Group"]);
     const telegramToggle = entryFor(["Show Telegram Group", "Show Telegram"]);
@@ -398,6 +432,13 @@
       ok: true,
       plans,
       settings,
+      pricing: {
+        plans: plans.standard,
+        offers: normalizeOffers(sheets.offers),
+        customRules: normalizeCustomPricing(sheets.customPricing),
+        offersEnabled: settings.showOffersGlobally,
+        customRulesAvailable: Boolean(sheets.customPricing && Array.isArray(sheets.customPricing.rows)),
+      },
       addOns: normalizeAddOns(sheets.addons || sheets.addOn),
       fetchedAt: normalizeText(payload.generatedAt),
     };
@@ -456,6 +497,7 @@
     formatGigabytes,
     normalizeHeader,
     normalizeAnnouncements,
+    normalizeCustomPricing,
     normalizeSearchText,
     normalizePayload,
     normalizePaymentMethods,

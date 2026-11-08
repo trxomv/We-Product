@@ -5,7 +5,7 @@
  */
 const SPREADSHEET_ID = "1njuAIxAfHpQXqNazapKEca-NQ_Czd-yj5GzRSpguVuA";
 const CACHE_SECONDS = 10;
-const CACHE_KEY = "weoffers_public_payload_v7_announcements";
+const CACHE_KEY = "weoffers_public_payload_v8_custom_pricing";
 
 const SHEET_NAMES = Object.freeze({
   standard: "Rate Plans-Website",
@@ -16,6 +16,7 @@ const SHEET_NAMES = Object.freeze({
   announcements: "Announcements",
   paymentMethods: "Payment Methods",
   addons: "Add-on",
+  customPricing: "Custom Pricing",
 });
 
 const OFFER_FIELDS = Object.freeze([
@@ -51,6 +52,7 @@ function cachedPayload_() {
     announcements: readTable_(spreadsheet, SHEET_NAMES.announcements, "announcements"),
     paymentMethods: readTable_(spreadsheet, SHEET_NAMES.paymentMethods, "paymentMethods"),
     addons: readTable_(spreadsheet, SHEET_NAMES.addons, "addons"),
+    customPricing: readTable_(spreadsheet, SHEET_NAMES.customPricing, "customPricing"),
   };
   decorateStandardOffers_(sheets);
   const payload = { ok: true, generatedAt: new Date().toISOString(), sheets: sheets };
@@ -187,6 +189,8 @@ function definitionsFor_(kind) {
     { key: "name", aliases: ["Plan Name", "Package Name", "Name"], required: false },
     { key: "mbs", aliases: ["MBs", "MB", "Megabytes"], required: true },
     { key: "minutes", aliases: ["Minutes", "Minute"], required: true },
+    { key: "mainPrice", aliases: ["Main Price"], required: false },
+    { key: "increase", aliases: ["Increase"], required: false },
     { key: "finalPrice", aliases: ["Final Price", "Final Price (EGP)"], required: true },
     { key: "badge", aliases: ["Badge", "Plan Badge"], required: false },
     { key: "show", aliases: ["Show Rate Plan", "Show Plan", "Show", "Visible", "Visibility", "Enabled"], required: false },
@@ -208,9 +212,23 @@ function definitionsFor_(kind) {
   ];
   if (kind === "offers") return [
     { key: "planId", aliases: ["No. of Plan", "No of Plan"], required: true },
+    { key: "mbs", aliases: ["MBs", "MB", "Megabytes"], required: false },
+    { key: "minutes", aliases: ["Minutes", "Minute"], required: false },
+    { key: "mainPrice", aliases: ["Main Price"], required: false },
+    { key: "increase", aliases: ["Increase"], required: false },
     { key: "finalPrice", aliases: ["Final Price", "Final Price (EGP)"], required: true },
     { key: "showOffer", aliases: ["Show Offer", "Show Offers"], required: true },
     { key: "discountPercent", aliases: ["Discount Percent", "Discount %"], required: false },
+  ];
+  if (kind === "customPricing") return [
+    { key: "ruleType", aliases: ["Type"], required: true },
+    { key: "gbFrom", aliases: ["GB From"], required: true },
+    { key: "gbTo", aliases: ["GB To"], required: true },
+    { key: "minutesFrom", aliases: ["Minutes From"], required: true },
+    { key: "minutesTo", aliases: ["Minutes To"], required: true },
+    { key: "gbPrice", aliases: ["GB Price"], required: true },
+    { key: "minutePrice", aliases: ["Minute Price"], required: true },
+    { key: "enabled", aliases: ["Enabled", "Enable", "Active"], required: true },
   ];
   if (kind === "settings") return [
     { key: "setting", aliases: ["Settings", "Setting", "Key", "الإعداد", "المفتاح"], required: true },

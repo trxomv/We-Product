@@ -1,5 +1,6 @@
 import "../site-config.js";
 import "./data/data-core.js";
+import * as customizerCore from "./data/customizer-core.js";
 import { createAddonRow } from "./components/addon-row.js";
 import { paymentLogoCandidates, paymentLogoInitials } from "./components/payment-logo.js";
 import { make } from "./utils/dom.js";
@@ -59,10 +60,37 @@ import { formatNumber } from "./utils/format.js";
     extraItems: document.getElementById("extra-data-items"),
     paymentSection: document.getElementById("payment-methods"),
     paymentGrid: document.getElementById("payment-method-grid"),
+    customizer: document.getElementById("customizer-panel"),
+    customBilling: document.getElementById("custom-billing-options"),
+    customAdvanceOptions: document.getElementById("custom-advance-options"),
+    customStartOptions: document.getElementById("custom-start-options"),
+    customStartDays: document.getElementById("custom-start-days"),
+    customDurationMode: document.getElementById("custom-duration-mode"),
+    customDaysControl: document.getElementById("custom-days-control"),
+    customBookingNotice: document.getElementById("custom-booking-notice"),
+    customGbRange: document.getElementById("custom-gb-range"),
+    customGbNumber: document.getElementById("custom-gb-number"),
+    customMinutesRange: document.getElementById("custom-minutes-range"),
+    customMinutesNumber: document.getElementById("custom-minutes-number"),
+    customDaysRange: document.getElementById("custom-days-range"),
+    customDaysNumber: document.getElementById("custom-days-number"),
+    customDaysMidpoint: document.getElementById("custom-days-midpoint"),
+    customDaysMaximum: document.getElementById("custom-days-maximum"),
+    customDurationTotal: document.getElementById("custom-duration-total"),
+    customStartDate: document.getElementById("custom-start-date"),
+    customEndDate: document.getElementById("custom-end-date"),
+    customValidityPeriod: document.getElementById("custom-validity-period"),
+    customSummaryGb: document.getElementById("custom-summary-gb"),
+    customSummaryMinutes: document.getElementById("custom-summary-minutes"),
+    customSummaryDays: document.getElementById("custom-summary-days"),
+    customPrice: document.getElementById("custom-final-price"),
+    customPriceSource: document.getElementById("custom-price-source"),
+    customSubscribe: document.getElementById("custom-subscribe"),
+    customStatus: document.getElementById("customizer-status"),
   };
 
   let currentData = null;
-  let selectedCategory = "all";
+  let selectedCategory = new URLSearchParams(window.location.search).get("customize") === "1" ? "custom" : "all";
   let searchText = "";
   let refreshTimer = null;
   let loadingTimer = null;
@@ -70,12 +98,16 @@ import { formatNumber } from "./utils/format.js";
   let announcementIndex = 0;
   let loading = false;
   let stale = false;
+  let capAdjustmentMessage = "";
+  let minutesEditing = false;
+  const customState = { billing: "current", futureMode: "custom", startDay: 1, gb: 10, minutes: 500, days: 30 };
 
   function safeEndpoint(value) {
     if (!value || String(value).includes("__SHEETS_WEB_APP_URL__")) return "";
     try {
       const url = new URL(String(value).trim(), document.baseURI);
       if (url.username || url.password || url.hash) return "";
+      if (url.origin === window.location.origin && url.pathname === "/preview-api.js") return url.href;
       if (url.protocol === "https:" && url.hostname.toLowerCase() === "script.google.com" && /^\/macros\/s\/[^/]+\/exec\/?$/.test(url.pathname)) return url.href;
       return "";
     } catch {
@@ -253,6 +285,181 @@ import { formatNumber } from "./utils/format.js";
     elements.paymentSection.hidden = elements.paymentGrid.childElementCount === 0;
   }
 
+  function setCustomStatus(message, state = "info") {
+    if (!elements.customStatus) return;
+    elements.customStatus.textContent = message;
+    elements.customStatus.dataset.state = state;
+  }
+
+  function normalizeMinuteDigits(value) {
+    return String(value ?? "")
+      .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
+      .replace(/[٬,\s]/g, "")
+      .trim();
+  }
+
+  function commitMinutesInput() {
+    if (!minutesEditing || !elements.customMinutesNumber) return;
+    const normalized = normalizeMinuteDigits(elements.customMinutesNumber.value);
+    const parsed = normalized === "" ? 0 : Number(normalized);
+    const value = Number.isFinite(parsed) ? Math.min(5000, Math.max(0, Math.trunc(parsed))) : customState.minutes;
+    minutesEditing = false;
+    customNumber("minutes", value);
+  }
+
+  function selectCustomButtons(selector, attribute, value) {
+    document.querySelectorAll(selector).forEach((button) => {
+      const selected = button.getAttribute(attribute) === String(value);
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+  }
+
+  function customNumber(name, raw, { preserveControl = null } = {}) {
+    const fullMonth = customState.billing === "next" && customState.futureMode === "full";
+    const limits = {
+      gb: { min: 0, max: customizerCore.maximumCustomGigabytes(customState.days, { fullMonth }), step: 1 },
+      minutes: { min: 0, max: 5000, step: 1 },
+      days: { min: 1, max: Number(elements.customDaysNumber?.max) || customizerCore.CUSTOM_DURATION_MAX_DAYS, step: 1 },
+    }[name];
+    if (!limits) return;
+    if (preserveControl && String(raw).trim() === "") return;
+    const parsed = Number(raw);
+    const value = Number.isFinite(parsed) ? parsed : limits.min;
+    if (name === "gb" && value > limits.max && limits.max === customizerCore.SHORT_DURATION_GIGABYTE_MAX) {
+      capAdjustmentMessage = "الحد الأقصى للإنترنت عند اختيار مدة من يوم إلى 7 أيام هو 20 جيجا.";
+    } else if (name === "gb") {
+      capAdjustmentMessage = "";
+    }
+    customState[name] = Math.min(limits.max, Math.max(limits.min, Math.round(value / limits.step) * limits.step));
+    renderCustomizer({ preserveControl: customState[name] === value ? preserveControl : null });
+  }
+
+  function renderCustomizer({ preserveControl = null } = {}) {
+    if (!elements.customizer) return;
+    if (!preserveControl && minutesEditing) preserveControl = elements.customMinutesNumber;
+    if (!currentData) {
+      setCustomStatus("جارٍ تحميل بيانات الباقات والأسعار من Google Sheets…", "info");
+      if (elements.customSubscribe) elements.customSubscribe.setAttribute("aria-disabled", "true");
+      return;
+    }
+    const settings = currentData.settings;
+    const allowDay1 = settings.customRatePlansFrom1 === true;
+    const allowDay16 = settings.customRatePlansFrom16 === true;
+    const allowedStarts = [allowDay1 ? 1 : null, allowDay16 ? 16 : null].filter(Boolean);
+    if (customState.billing === "next" && allowedStarts.length && !allowedStarts.includes(customState.startDay)) customState.startDay = allowedStarts[0];
+
+    elements.customAdvanceOptions.hidden = customState.billing !== "next" || allowedStarts.length === 0;
+    elements.customStartOptions.hidden = customState.billing !== "next" || allowedStarts.length === 0;
+    elements.customDurationMode.hidden = customState.billing !== "next" || allowedStarts.length === 0;
+    elements.customBookingNotice.hidden = customState.billing !== "next" || allowedStarts.length > 0;
+    if (elements.customBookingNotice.hidden === false) {
+      elements.customBookingNotice.textContent = "الحجز المسبق غير متاح حاليًا؛ إعدادا Custom Rate Plans From 1 وCustom Rate Plans From 16 غير مفعّلين في Website Settings.";
+    }
+    selectCustomButtons("[data-billing]", "data-billing", customState.billing);
+    selectCustomButtons("[data-future-mode]", "data-future-mode", customState.futureMode);
+    if (elements.customStartDays) {
+      elements.customStartDays.replaceChildren(...allowedStarts.map((day) => {
+        const button = make("button", `custom-choice${customState.startDay === day ? " is-selected" : ""}`, `يوم ${day}`);
+        button.type = "button";
+        button.dataset.startDay = String(day);
+        button.setAttribute("aria-pressed", String(customState.startDay === day));
+        button.addEventListener("click", () => {
+          customState.startDay = day;
+          renderCustomizer();
+        });
+        return button;
+      }));
+    }
+
+    const futureFull = customState.billing === "next" && customState.futureMode === "full" && allowedStarts.length > 0;
+    if (elements.customDaysControl) elements.customDaysControl.hidden = futureFull || (customState.billing === "next" && !allowedStarts.length);
+    const schedule = customizerCore.resolveSchedule({
+      billing: customState.billing,
+      futureMode: customState.futureMode,
+      startDay: customState.startDay,
+      days: customState.days,
+      allowDay1,
+      allowDay16,
+    });
+    if (schedule.valid && !schedule.fullMonth && customState.days !== schedule.days) customState.days = schedule.days;
+    const gbMax = customizerCore.maximumCustomGigabytes(schedule.days, { fullMonth: schedule.fullMonth });
+    if (schedule.valid && customState.gb > gbMax) {
+      customState.gb = gbMax;
+      capAdjustmentMessage = "تم ضبط كمية الإنترنت إلى 20 جيجا؛ الحد الأقصى عند مدة من يوم إلى 7 أيام هو 20 جيجا.";
+      preserveControl = null;
+    } else if (gbMax > customizerCore.SHORT_DURATION_GIGABYTE_MAX) {
+      capAdjustmentMessage = "";
+    }
+
+    const durationMax = Math.max(1, schedule.maxDays || 1);
+    const daysControls = [[elements.customGbRange, customState.gb], [elements.customGbNumber, customState.gb], [elements.customMinutesRange, customState.minutes], [elements.customMinutesNumber, customState.minutes], [elements.customDaysRange, customState.days], [elements.customDaysNumber, customState.days]];
+    daysControls.forEach(([control, value]) => { if (control && control !== preserveControl) control.value = String(value); });
+    if (elements.customGbRange) elements.customGbRange.max = String(gbMax);
+    if (elements.customGbNumber) elements.customGbNumber.max = String(gbMax);
+    const gbMaximumLabel = elements.customizer.querySelector('[data-custom-control="gb"] .custom-range-scale span:last-child');
+    if (gbMaximumLabel) gbMaximumLabel.textContent = `${gbMax} جيجا`;
+    if (elements.customDaysRange) elements.customDaysRange.max = String(durationMax);
+    if (elements.customDaysNumber) elements.customDaysNumber.max = String(durationMax);
+    if (elements.customDaysMidpoint) elements.customDaysMidpoint.textContent = `${Math.max(1, Math.ceil(durationMax / 2))} يوم`;
+    if (elements.customDaysMaximum) elements.customDaysMaximum.textContent = `${durationMax} يوم`;
+
+    if (elements.customSummaryGb) elements.customSummaryGb.textContent = `${formatNumber(customState.gb)} جيجا`;
+    if (elements.customSummaryMinutes) elements.customSummaryMinutes.textContent = `${formatNumber(customState.minutes)} دقيقة`;
+    if (elements.customSummaryDays) elements.customSummaryDays.textContent = schedule.valid
+      ? (schedule.fullMonth ? "شهر كامل" : `${formatNumber(schedule.days)} يوم`)
+      : "غير متاح";
+    if (elements.customDurationTotal) elements.customDurationTotal.textContent = schedule.valid ? `${formatNumber(schedule.days)} يوم` : "غير متاح";
+    if (elements.customStartDate) elements.customStartDate.textContent = schedule.valid ? customizerCore.formatDate(schedule.start) : "—";
+    if (elements.customEndDate) elements.customEndDate.textContent = schedule.valid ? customizerCore.formatDate(schedule.end) : "—";
+    if (elements.customValidityPeriod) elements.customValidityPeriod.textContent = schedule.valid
+      ? schedule.description
+      : "لا تتوفر فترة صلاحية حاليًا.";
+
+    const result = schedule.valid ? customizerCore.calculateCustomPrice({
+      data: currentData,
+      gb: customState.gb,
+      minutes: customState.minutes,
+      days: schedule.days,
+      pricingMonthDays: schedule.pricingMonthDays,
+      fullMonth: schedule.fullMonth,
+    }) : { ok: false, reason: "booking-disabled" };
+    const price = result.ok ? result.finalPrice : NaN;
+    const sourceNames = { offer: "عرض نشط من Google Sheets", standard: "سعر الباقة الأساسية من Google Sheets", custom: "تسعير مخصص من ورقة Custom Pricing" };
+    if (elements.customPrice) elements.customPrice.textContent = Number.isFinite(price) ? formatNumber(price) : "—";
+    if (elements.customPriceSource) elements.customPriceSource.textContent = result.ok
+      ? `${sourceNames[result.source] ?? "السعر المعتمد من الشيت"}${result.billableDays ? ` · أيام الحساب ${formatNumber(result.billableDays)}` : ""}`
+      : "لا يوجد سعر مؤكد لهذه الاختيارات.";
+
+    const phone = validWhatsAppNumber(settings.whatsappNumber);
+    const message = result.ok ? customizerCore.createWhatsAppMessage({ gb: customState.gb, minutes: customState.minutes, schedule, price }) : "";
+    const canSubscribe = Boolean(phone && message && Number.isFinite(price));
+    if (elements.customSubscribe) {
+      elements.customSubscribe.setAttribute("aria-disabled", String(!canSubscribe));
+      elements.customSubscribe.href = canSubscribe ? baseWhatsAppUrl(phone, message) : "#";
+    }
+    let statusMessage;
+    let statusState;
+    if (result.ok) {
+      statusMessage = stale ? "تعذر تحديث المصدر الآن؛ السعر مبني على آخر بيانات صحيحة محمّلة." : "السعر محسوب مباشرة من سعر الباقة أو قاعدة التسعير النشطة في الشيت.";
+      statusState = stale ? "info" : "success";
+    } else if (result.reason === "booking-disabled") {
+      statusMessage = "لا توجد بداية مسبقة مفعّلة في Website Settings. يمكنك اختيار الشهر الحالي.";
+      statusState = "error";
+    } else if (result.reason === "source-unavailable") {
+      statusMessage = "بيانات Custom Pricing غير متاحة من Apps Script بعد. يلزم نشر إصدار الجسر الذي يقرأ ورقة التسعير.";
+      statusState = "error";
+    } else if (result.reason === "invalid") {
+      statusMessage = "أدخل كميات صحيحة غير سالبة.";
+      statusState = "error";
+    } else {
+      statusMessage = "لا توجد باقة مطابقة أو قاعدة Custom Pricing مفعّلة لهذه الكميات. لم نعرض سعرًا تقديريًا.";
+      statusState = "error";
+    }
+    setCustomStatus([statusMessage, capAdjustmentMessage].filter(Boolean).join(" "), capAdjustmentMessage ? "warning" : statusState);
+  }
+
   function updateChrome() {
     const settings = sourceSettings();
     const phone = validWhatsAppNumber(settings.whatsappNumber);
@@ -286,9 +493,10 @@ import { formatNumber } from "./utils/format.js";
     if (elements.contactBar) elements.contactBar.hidden = !(showWhatsApp || showWhatsAppGroup || showTelegram);
 
     if (elements.searchWrap) {
-      elements.searchWrap.hidden = !settings.showSearch;
-      elements.searchWrap.parentElement?.classList.toggle("search-hidden", !settings.showSearch);
-      if (!settings.showSearch && elements.searchInput) {
+      const showSearch = settings.showSearch && selectedCategory !== "custom";
+      elements.searchWrap.hidden = !showSearch;
+      elements.searchWrap.parentElement?.classList.toggle("search-hidden", !showSearch);
+      if (!showSearch && elements.searchInput) {
         elements.searchInput.value = "";
         searchText = "";
       }
@@ -341,14 +549,17 @@ import { formatNumber } from "./utils/format.js";
         ? (currentData.plans.all ?? []).length > 0
         : (currentData.plans[category.id] ?? []).length > 0,
     );
+    categories.push({ id: "custom", label: "خصص باقتك بنفسك" });
     if (!categories.some((category) => category.id === selectedCategory)) selectedCategory = categories[0]?.id ?? "all";
     elements.tabs.replaceChildren();
     categories.forEach((category) => {
       const button = make("button", "category-tab", category.label);
       button.type = "button";
+      button.dataset.category = category.id;
       button.setAttribute("aria-pressed", String(selectedCategory === category.id));
       button.addEventListener("click", () => {
         selectedCategory = category.id;
+        updateChrome();
         renderTabs();
         renderCards();
       });
@@ -576,6 +787,19 @@ import { formatNumber } from "./utils/format.js";
 
   function renderCards() {
     if (!elements.grid || !currentData) return;
+    if (selectedCategory === "custom") {
+      elements.grid.hidden = true;
+      if (elements.empty) elements.empty.hidden = true;
+      if (elements.customizer) elements.customizer.hidden = false;
+      if (elements.count) elements.count.textContent = "—";
+      if (elements.range) elements.range.textContent = "اختار مواصفات باقتك واحسب السعر مباشرة";
+      if (elements.title) elements.title.textContent = "خصص باقتك بنفسك";
+      renderCustomizer();
+      setStatus(stale ? "تعذر تحديث البيانات · عرض المخصص يستخدم آخر نسخة صحيحة." : "حدد تفاصيل باقتك لمشاهدة السعر المتاح.", stale ? "stale" : "success");
+      return;
+    }
+    elements.grid.hidden = false;
+    if (elements.customizer) elements.customizer.hidden = true;
     const categories = core.visibleCategories(currentData.settings).filter((entry) =>
       entry.id === "all"
         ? (currentData.plans.all ?? []).length > 0
@@ -676,6 +900,36 @@ import { formatNumber } from "./utils/format.js";
 
   function initialize() {
     if (elements.retryButton) elements.retryButton.addEventListener("click", refresh);
+    elements.customBilling?.querySelectorAll("[data-billing]").forEach((button) => button.addEventListener("click", () => {
+      customState.billing = button.dataset.billing;
+      updateChrome();
+      renderCustomizer();
+    }));
+    elements.customDurationMode?.querySelectorAll("[data-future-mode]").forEach((button) => button.addEventListener("click", () => {
+      customState.futureMode = button.dataset.futureMode;
+      renderCustomizer();
+    }));
+    elements.customizer?.querySelectorAll("[data-control][data-step]").forEach((button) => button.addEventListener("click", () => {
+      const key = button.dataset.control;
+      const step = key === "minutes" ? 50 : 1;
+      customNumber(key, customState[key] + Number(button.dataset.step) * step);
+    }));
+    [["gb", elements.customGbRange, elements.customGbNumber], ["days", elements.customDaysRange, elements.customDaysNumber]].forEach(([key, range, number]) => {
+      range?.addEventListener("input", () => customNumber(key, range.value));
+      number?.addEventListener("input", () => customNumber(key, number.value, { preserveControl: number }));
+      number?.addEventListener("change", () => customNumber(key, number.value));
+    });
+    elements.customMinutesRange?.addEventListener("input", () => customNumber("minutes", elements.customMinutesRange.value));
+    elements.customMinutesNumber?.addEventListener("focus", () => { minutesEditing = true; });
+    elements.customMinutesNumber?.addEventListener("input", () => { minutesEditing = true; });
+    elements.customMinutesNumber?.addEventListener("change", commitMinutesInput);
+    elements.customMinutesNumber?.addEventListener("blur", commitMinutesInput);
+    elements.customMinutesNumber?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        elements.customMinutesNumber.blur();
+      }
+    });
     if (elements.searchInput) {
       elements.searchInput.addEventListener("input", () => {
         searchText = elements.searchInput.value;

@@ -35,7 +35,7 @@ if (!Array.isArray(routes.routes) || !routes.routes.some((route) => route.path =
 for (const file of [
   "index.html", "site-config.js", "manus-routes.json",
   "css/main.css", "css/components.css", "css/responsive.css",
-  "js/app.js", "js/data/data-core.js", "js/components/addon-row.js", "js/components/payment-logo.js",
+  "js/app.js", "js/data/data-core.js", "js/data/customizer-core.js", "js/components/addon-row.js", "js/components/payment-logo.js",
   "js/utils/dom.js", "js/utils/format.js",
   "assets/images/sim-hero.webp", "assets/images/we-project-mark.webp",
   "assets/icons/addon-phone.svg", "assets/icons/addon-data.svg", "assets/icons/addon-generic.svg",

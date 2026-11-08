@@ -26,13 +26,13 @@ test("static build validates site-config.js and copies the complete public tree 
   assert.match(buildScript, /await cp\(publicDir, distDir, \{ recursive: true \}\)/);
   assert.match(buildScript, /manus-routes\.json/);
   assert.doesNotMatch(buildScript, /process\.env/);
-  for (const asset of ["css/main.css", "css/components.css", "css/responsive.css", "js/app.js", "js/data/data-core.js", "js/components/addon-row.js", "js/components/payment-logo.js", "js/utils/dom.js", "js/utils/format.js", "assets/icons/addon-phone.svg", "assets/icons/addon-data.svg", "assets/icons/addon-generic.svg"]) {
+  for (const asset of ["css/main.css", "css/components.css", "css/responsive.css", "js/app.js", "js/data/data-core.js", "js/data/customizer-core.js", "js/components/addon-row.js", "js/components/payment-logo.js", "js/utils/dom.js", "js/utils/format.js", "assets/icons/addon-phone.svg", "assets/icons/addon-data.svg", "assets/icons/addon-generic.svg"]) {
     assert.ok(buildScript.includes(asset), `missing production asset validation: ${asset}`);
   }
 });
 
 test("Apps Script exposes only the required public website sheets and never returns raw formulas", () => {
-  for (const sheet of ["Rate Plans-Website", "Rate Plans to EOM-Website", "Rate Plans to 15-Website", "Rate Plans_OFFER-Website", "Website Settings", "Announcements", "Payment Methods", "Add-on"]) {
+  for (const sheet of ["Rate Plans-Website", "Rate Plans to EOM-Website", "Rate Plans to 15-Website", "Rate Plans_OFFER-Website", "Website Settings", "Announcements", "Payment Methods", "Add-on", "Custom Pricing"]) {
     assert.ok(appsScript.includes(sheet), `missing allowlisted sheet ${sheet}`);
   }
   assert.match(appsScript, /announcements:\s*readTable_\(spreadsheet,\s*SHEET_NAMES\.announcements,\s*"announcements"\)/);
@@ -104,4 +104,31 @@ test("the feature strip has the requested four icons and fixed information order
   assert.deepEqual(labels, ["الدفع بعد التفعيل", "1 ميجا = 1 ميجا", "1 دقيقة = 1 دقيقة لكل الشبكات", "بعد انتهاء الجيجات: 1 دقيقة = 1 ميجا"]);
   assert.equal((section.match(/class="feature-icon"/g) || []).length, 4);
   assert.doesNotMatch(section, /bar-divider|معلومات إضافية|ملاحظة/);
+});
+
+test("customizer UI is mounted beside category results and includes live synced controls", () => {
+  assert.ok(indexHtml.includes('id="customizer-panel"'));
+  assert.ok(indexHtml.includes("خصص باقتك بنفسك"));
+  assert.ok(indexHtml.includes('data-billing="current"'));
+  assert.ok(indexHtml.includes('data-billing="next"'));
+  assert.ok(indexHtml.includes('id="custom-gb-range"'));
+  assert.ok(indexHtml.includes('id="custom-gb-number"'));
+  assert.ok(indexHtml.includes('id="custom-minutes-range"'));
+  assert.ok(indexHtml.includes('id="custom-minutes-number"'));
+  assert.match(indexHtml, /id="custom-duration-mode"[\s\S]*?id="custom-start-options"/);
+  assert.match(indexHtml, /id="custom-minutes-number" type="text" inputmode="numeric"/);
+  for (const id of ["custom-duration-total", "custom-start-date", "custom-end-date", "custom-validity-period"]) {
+    assert.ok(indexHtml.includes(`id="${id}"`), `missing live validity detail ${id}`);
+  }
+  assert.ok(frontend.includes("calculateCustomPrice"));
+  assert.ok(frontend.includes("customizer-core.js"));
+  assert.match(frontend, /preserveControl: number/);
+  assert.match(frontend, /control !== preserveControl/);
+  assert.match(frontend, /addEventListener\("blur", commitMinutesInput\)/);
+  assert.match(frontend, /const durationMax = Math\.max\(1, schedule\.maxDays \|\| 1\)/);
+  assert.ok(stylesheets[1].includes(".customizer-advance-grid"));
+  assert.ok(stylesheets[1].includes(".custom-duration-details"));
+  assert.ok(stylesheets[2].includes(".customizer-advance-grid { grid-template-columns: minmax(0,1fr)"));
+  assert.ok(frontend.includes('url.pathname === "/preview-api.js"'));
+  assert.ok(buildScript.includes('hostname.toLowerCase() !== "script.google.com"'), "production builds must only accept the published Apps Script endpoint");
 });

@@ -618,3 +618,66 @@
     justify-content: center;
   }
 }
+
+
+@media (max-width: 760px) {
+  .customizer-panel { gap: 12px; padding: 14px 11px; border-radius: 19px; }
+  .customizer-advance-grid { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .customizer-controls { grid-template-columns: minmax(0,1fr); }
+  .custom-control[data-custom-control="days"] { grid-column: auto; }
+  .customizer-heading h3 { font-size: 1.55rem; }
+  .customizer-heading > p:last-child { font-size: .83rem; }
+  .custom-choice { flex: 1 1 auto; min-height: 40px; padding-inline: 11px; font-size: .8rem; }
+  .custom-control { padding: 11px 10px 10px; border-radius: 15px; }
+  .custom-control-heading { grid-template-columns: 38px minmax(70px,1fr) 34px minmax(84px,112px) 34px; gap: 5px; }
+  .custom-control-icon { width: 36px; height: 36px; border-radius: 11px; font-size: 1.35rem; }
+  .custom-control-heading label { font-size: .9rem; }
+  .custom-control-heading small { font-size: .68rem; }
+  .custom-step { width: 40px; height: 40px; border-radius: 9px; }
+  .custom-number-wrap { gap: 3px; padding: 6px 4px; }
+  .custom-number-wrap input { font-size: 1rem; }
+  .custom-number-wrap span { font-size: .66rem; }
+  .custom-range { width: calc(100% - 76px); margin: 15px 38px 8px; }
+  .custom-range-scale { margin-inline: 38px; font-size: .66rem; }
+  .custom-summary { grid-template-columns: 1fr; gap: 9px; padding: 13px; }
+  .custom-duration-details { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; padding: 11px; }
+  .custom-duration-details span { font-size: .68rem; }
+  .custom-duration-details strong { font-size: .75rem; }
+  .custom-summary-art { display: none; }
+  .custom-summary-content h4 { font-size: 1rem; }
+  .custom-summary-specs span { font-size: .7rem; }
+  .custom-summary-specs strong { font-size: .9rem; }
+  .custom-price-row { align-items: flex-start; }
+  .custom-price-value { justify-content: flex-end; }
+  .custom-price-value strong { font-size: 1.8rem; }
+  .custom-price-row small { max-width: 190px; }
+  .custom-validity { font-size: .74rem; }
+  .custom-subscribe-row { align-items: stretch; flex-direction: column; gap: 10px; padding: 12px; }
+  .custom-subscribe-row > div strong { font-size: .88rem; }
+  .custom-subscribe-button { width: 100%; min-height: 46px; }
+}
+
+@media (max-width: 390px) {
+  .customizer-panel { padding-inline: 9px; }
+  .customizer-heading .eyebrow { font-size: .78rem; }
+  .customizer-heading h3 { font-size: 1.35rem; }
+  .custom-control-heading { grid-template-columns: 32px minmax(48px,1fr) 40px minmax(68px,90px) 40px; gap: 4px; }
+  .custom-control-icon { width: 31px; height: 31px; font-size: 1.14rem; }
+  .custom-control-heading label { font-size: .82rem; }
+  .custom-control-heading small { font-size: .61rem; }
+  .custom-step { width: 40px; height: 40px; font-size: 1.16rem; }
+  .custom-number-wrap input { font-size: .9rem; }
+  .custom-number-wrap span { font-size: .6rem; }
+  .custom-range { width: calc(100% - 64px); margin-inline: 32px; }
+  .custom-range-scale { margin-inline: 32px; font-size: .6rem; }
+  .custom-price-row { flex-direction: column; gap: 4px; }
+  .custom-price-value { justify-content: flex-start; }
+}
+
+@media (max-width: 340px) {
+  .custom-control-heading { grid-template-columns: 30px minmax(40px,1fr) 40px minmax(62px,82px) 40px; gap: 3px; }
+  .custom-control-icon { width: 29px; height: 29px; }
+  .custom-step { width: 40px; height: 40px; }
+  .custom-number-wrap { padding-inline: 3px; }
+  .custom-number-wrap input { font-size: .84rem; }
+}
