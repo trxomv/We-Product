@@ -37,12 +37,13 @@
     <a class="skip-link" href="#packages">تخطَّ إلى الباقات</a>
     <div class="ambient ambient-one" aria-hidden="true"></div>
     <div class="ambient ambient-two" aria-hidden="true"></div>
-
-    <section class="announcement-bar shell" id="announcement-bar" aria-label="إعلانات الموقع" hidden>
-      <span class="announcement-icon" aria-hidden="true">✦</span>
-      <p id="announcement-text"></p>
-      <span class="announcement-dots" id="announcement-dots" aria-hidden="true"></span>
-    </section>
+    <div class="top-stack" id="top-stack"></div>
+      <section class="announcement-bar shell" id="announcement-bar" aria-label="إعلانات الموقع" hidden>
+        <span class="announcement-icon" aria-hidden="true">✦</span>
+        <p id="announcement-text"></p>
+        <span class="announcement-dots" id="announcement-dots" aria-hidden="true"></span>
+          </section>
+    </div>
 
     <header class="site-header">
       <div class="shell header-inner">
@@ -166,8 +167,8 @@
                 <div class="custom-number-wrap"><input id="custom-minutes-number" type="text" inputmode="numeric" pattern="[0-9٠-٩۰-۹,٬]*" autocomplete="off" /><span>دقيقة</span></div>
               <button class="custom-step" type="button" data-control="minutes" data-step="1" aria-label="زيادة الدقائق">+</button>
               </div>
-              <input class="custom-range range-minutes" id="custom-minutes-range" type="range" min="0" max="5000" step="50" aria-label="اختيار عدد الدقائق" />
-              <div class="custom-range-scale"><span>0 دقيقة</span><span>2500 دقيقة</span><span>5000 دقيقة</span></div>
+              <input class="custom-range range-minutes" id="custom-minutes-range" type="range" min="0" max="3500" step="50" aria-label="اختيار عدد الدقائق" />
+              <div class="custom-range-scale"><span>0 دقيقة</span><span>1750 دقيقة</span><span>3500 دقيقة</span></div>
             </div>
 
             <div class="custom-control" id="custom-days-control" data-custom-control="days">
@@ -184,7 +185,6 @@
           </div>
 
           <div class="custom-duration-details" id="custom-duration-details" aria-live="polite" aria-label="تفاصيل صلاحية الباقة">
-            <div><span>إجمالي الأيام</span><strong id="custom-duration-total">—</strong></div>
             <div><span>تاريخ البداية</span><strong id="custom-start-date">—</strong></div>
             <div><span>تاريخ النهاية</span><strong id="custom-end-date">—</strong></div>
             <div><span>صلاحية الباقة</span><strong id="custom-validity-period">—</strong></div>
@@ -278,7 +278,7 @@
     </main>
 
     <footer class="site-footer shell">
-      <a class="footer-brand" href="#top"><b class="we-mark">WE</b> <span>باقات <b class="we-mark">WE</b> المخصصة</span></a>
+      <a class="footer-brand" href="#top"><span>باقات <b class="we-mark">WE</b> المخصصة</span></a>
       <a id="footer-whatsapp" href="#contact-bar" hidden>استفسارات الباقات عبر واتساب</a>
     </footer>
 

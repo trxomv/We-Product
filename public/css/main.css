@@ -193,7 +193,7 @@ a { color: inherit; }
 .retry-button { min-height: 30px; margin-top: 5px; padding: 4px 11px; color: #1b1127; border: 0; border-radius: 999px; background: linear-gradient(110deg,#ffe28e,#ffb934); font: inherit; font-size: .72rem; font-weight: 850; cursor: pointer; }
 
 
-.hero { position: relative; display: grid; grid-template-columns: 300px minmax(0,1fr); align-items: center; gap: clamp(16px,3vw,40px); padding-block: 24px 16px; direction: ltr; }
+.hero { position: relative; display: grid; grid-template-columns: 300px minmax(1,1fr); align-items: center; gap: clamp(16px,3vw,40px); padding-block: 24px 16px; direction: ltr; }
 
 
 .hero-description:empty { display: none; margin: 0; }
@@ -302,7 +302,7 @@ h1 span { color: transparent; background: linear-gradient(90deg,#fff2c9,#ffd564 
 .section-heading .eyebrow { margin-bottom: 8px; }
 
 
-h2 { margin-bottom: 0; font-size: clamp(1.8rem,3.1vw,2.65rem); letter-spacing: -.045em; line-height: 1.2; }
+h2 { margin-bottom: 0; font-size: clamp(1.6rem,3.1vw,2.65rem); letter-spacing: -.045em; line-height: 1.2; }
 
 
 .heading-we { font-size: 1.02em; }
@@ -398,7 +398,7 @@ h2 { margin-bottom: 0; font-size: clamp(1.8rem,3.1vw,2.65rem); letter-spacing: -
 .payment-methods { margin-top: 12px; padding: 14px 16px; border: 1px solid rgba(107,224,255,.2); border-radius: 18px; background: linear-gradient(105deg,rgba(33,25,63,.83),rgba(10,19,39,.95)); box-shadow: inset 0 0 22px rgba(75,205,255,.05); }
 
 
-.payment-methods-heading { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 11px; text-align: right; }
+.payment-methods-heading { display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 11px; text-align: right; }
 
 
 .payment-methods-heading .eyebrow { margin: 0 0 2px; color: #80e9ed; font-size: .68rem; }

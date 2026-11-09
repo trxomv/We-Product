@@ -303,7 +303,7 @@ import { formatNumber } from "./utils/format.js";
     if (!minutesEditing || !elements.customMinutesNumber) return;
     const normalized = normalizeMinuteDigits(elements.customMinutesNumber.value);
     const parsed = normalized === "" ? 0 : Number(normalized);
-    const value = Number.isFinite(parsed) ? Math.min(5000, Math.max(0, Math.trunc(parsed))) : customState.minutes;
+    const value = Number.isFinite(parsed) ? Math.min(3500, Math.max(0, Math.trunc(parsed))) : customState.minutes;
     minutesEditing = false;
     customNumber("minutes", value);
   }
@@ -320,7 +320,7 @@ import { formatNumber } from "./utils/format.js";
     const fullMonth = customState.billing === "next" && customState.futureMode === "full";
     const limits = {
       gb: { min: 0, max: customizerCore.maximumCustomGigabytes(customState.days, { fullMonth }), step: 1 },
-      minutes: { min: 0, max: 5000, step: 1 },
+      minutes: { min: 0, max: 3500, step: 1 },
       days: { min: 1, max: Number(elements.customDaysNumber?.max) || customizerCore.CUSTOM_DURATION_MAX_DAYS, step: 1 },
     }[name];
     if (!limits) return;
@@ -340,7 +340,7 @@ import { formatNumber } from "./utils/format.js";
     if (!elements.customizer) return;
     if (!preserveControl && minutesEditing) preserveControl = elements.customMinutesNumber;
     if (!currentData) {
-      setCustomStatus("جارٍ تحميل بيانات الباقات والأسعار من Google Sheets…", "info");
+      setCustomStatus("جارٍ تحميل بيانات الباقات والأسعار…", "info");
       if (elements.customSubscribe) elements.customSubscribe.setAttribute("aria-disabled", "true");
       return;
     }
@@ -398,8 +398,10 @@ import { formatNumber } from "./utils/format.js";
     daysControls.forEach(([control, value]) => { if (control && control !== preserveControl) control.value = String(value); });
     if (elements.customGbRange) elements.customGbRange.max = String(gbMax);
     if (elements.customGbNumber) elements.customGbNumber.max = String(gbMax);
+    const gbMidpointLabel = elements.customizer.querySelector('[data-custom-control="gb"] .custom-range-scale span:nth-child(2)');
     const gbMaximumLabel = elements.customizer.querySelector('[data-custom-control="gb"] .custom-range-scale span:last-child');
     if (gbMaximumLabel) gbMaximumLabel.textContent = `${gbMax} جيجا`;
+    if (gbMidpointLabel) gbMidpointLabel.textContent = `${Math.round(gbMax / 2)} جيجا`;
     if (elements.customDaysRange) elements.customDaysRange.max = String(durationMax);
     if (elements.customDaysNumber) elements.customDaysNumber.max = String(durationMax);
     if (elements.customDaysMidpoint) elements.customDaysMidpoint.textContent = `${Math.max(1, Math.ceil(durationMax / 2))} يوم`;
@@ -426,11 +428,11 @@ import { formatNumber } from "./utils/format.js";
       fullMonth: schedule.fullMonth,
     }) : { ok: false, reason: "booking-disabled" };
     const price = result.ok ? result.finalPrice : NaN;
-    const sourceNames = { offer: "عرض نشط من Google Sheets", standard: "سعر الباقة الأساسية من Google Sheets", custom: "تسعير مخصص من ورقة Custom Pricing" };
+    const sourceNames = { offer: "عرض نشط", standard: "سعر الباقة الأساسية", custom: "تسعير مخصص" };
     if (elements.customPrice) elements.customPrice.textContent = Number.isFinite(price) ? formatNumber(price) : "—";
     if (elements.customPriceSource) elements.customPriceSource.textContent = result.ok
-      ? `${sourceNames[result.source] ?? "السعر المعتمد من الشيت"}${result.billableDays ? ` · أيام الحساب ${formatNumber(result.billableDays)}` : ""}`
-      : "لا يوجد سعر مؤكد لهذه الاختيارات.";
+  ? (sourceNames[result.source] ?? "السعر المعتمد من الشيت")
+  : "لا يوجد سعر مؤكد لهذه الاختيارات.";
 
     const phone = validWhatsAppNumber(settings.whatsappNumber);
     const message = result.ok ? customizerCore.createWhatsAppMessage({ gb: customState.gb, minutes: customState.minutes, schedule, price }) : "";
@@ -442,10 +444,10 @@ import { formatNumber } from "./utils/format.js";
     let statusMessage;
     let statusState;
     if (result.ok) {
-      statusMessage = stale ? "تعذر تحديث المصدر الآن؛ السعر مبني على آخر بيانات صحيحة محمّلة." : "السعر محسوب مباشرة من سعر الباقة أو قاعدة التسعير النشطة في الشيت.";
+      statusMessage = stale ? "تعذر تحديث المصدر الآن؛ السعر مبني على آخر بيانات صحيحة محمّلة." : "السعر محسوب مباشرة من سعر الباقة أو قاعدة التسعير النشطة.";
       statusState = stale ? "info" : "success";
     } else if (result.reason === "booking-disabled") {
-      statusMessage = "لا توجد بداية مسبقة مفعّلة في Website Settings. يمكنك اختيار الشهر الحالي.";
+      statusMessage = "لا توجد بداية مسبقة مفعّلة يمكنك اختيار الشهر الحالي.";
       statusState = "error";
     } else if (result.reason === "source-unavailable") {
       statusMessage = "بيانات Custom Pricing غير متاحة من Apps Script بعد. يلزم نشر إصدار الجسر الذي يقرأ ورقة التسعير.";
@@ -973,4 +975,23 @@ import { formatNumber } from "./utils/format.js";
     console.error("WE Offers initialization failed", error);
     if (elements.status) setStatus("تعذر تهيئة الباقات حاليًا. حاول إعادة التحميل.", "error");
   }
+})();
+
+(() => {
+  const stack = document.getElementById("top-stack");
+  const bar = document.getElementById("announcement-bar");
+  const root = document.documentElement;
+  const syncHeight = () => root.style.setProperty("--announce-h", !bar || bar.hidden ? "0px" : `${bar.offsetHeight}px`);
+  let scrolled = false;
+  const onScroll = () => {
+    const y = window.scrollY || document.documentElement.scrollTop;
+    if (!scrolled && y > 160) scrolled = true;
+    else if (scrolled && y < 30) scrolled = false;
+    stack?.classList.toggle("is-scrolled", scrolled);
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", syncHeight);
+  if (bar) new MutationObserver(syncHeight).observe(bar, { attributes: true, childList: true, subtree: true, characterData: true });
+  syncHeight();
+  onScroll();
 })();
